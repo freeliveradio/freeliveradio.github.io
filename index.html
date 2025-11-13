@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>KLIZ-FM Live Stream</title>
+  <link href="https://vjs.zencdn.net/7.11.4/video-js.css" rel="stylesheet" />
+  <style>
+    body {
+      background-color: #121212;
+      color: #f0f0f0;
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding-top: 150px;
+      text-align: center;
+    }
+    header {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      padding: 20px;
+      background-color: #1f1f1f;
+      border-bottom: 2px solid #444;
+      z-index: 1000;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+    header .music-icon {
+      font-size: 48px;
+      color: #6a11cb;
+    }
+    header h1 {
+      margin: 10px 0 0;
+      font-size: 2em;
+    }
+    .audio-container {
+      margin: 20px auto;
+      width: 80%;
+      max-width: 600px;
+      background-color: #1e1e1e;
+      padding: 20px;
+      border-radius: 10px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.5);
+    }
+    .video-js {
+      width: 100%;
+      height: 40px;
+      border-radius: 10px;
+    }
+    .vjs-tech {
+      position: absolute !important;
+      width: 0 !important;
+      height: 0 !important;
+      overflow: hidden !important;
+      clip: rect(0 0 0 0) !important;
+    }
+    .vjs-control-bar {
+      display: flex !important;
+      align-items: center;
+      height: 40px;
+      border-radius: 10px;
+    }
+    .vjs-live-display {
+      color: #ff4c4c !important;
+      font-weight: bold;
+      padding-left: 10px;
+    }
+    .vjs-big-play-button {
+      display: none !important;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="music-icon">🎵</div>
+    <h1>KLIZ-FM Live Radio</h1>
+  </header>
+
+  <div class="audio-container">
+    <audio
+      id="live-audio"
+      class="video-js vjs-default-skin vjs-live"
+      controls
+      preload="auto"
+      data-setup='{
+        "liveui": true,
+        "controlBar": {
+          "children": [
+            "playToggle",
+            "liveDisplay",
+            "progressControl",
+            "volumePanel"
+          ]
+        }
+      }'>
+      <source src="https://27143.live.streamtheworld.com/KLIZFM.mp3?dist=onlineradiobox" type="audio/mpeg" />
+    </audio>
+  </div>
+
+  <script src="https://vjs.zencdn.net/7.11.4/video.min.js"></script>
+</body>
+</html>
