@@ -4,7 +4,10 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>KLIZ-FM Live Stream</title>
-  <link href="https://vjs.zencdn.net/7.11.4/video-js.css" rel="stylesheet" />
+
+  <!-- MediaElement.js CSS -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/mediaelement@5.0.5/build/mediaelementplayer.min.css">
+
   <style>
     body {
       background-color: #121212;
@@ -44,31 +47,20 @@
       border-radius: 10px;
       box-shadow: 0 0 10px rgba(0,0,0,0.5);
     }
-    .video-js {
-      width: 100%;
-      height: 40px;
-      border-radius: 10px;
-    }
-    .vjs-tech {
-      position: absolute !important;
-      width: 0 !important;
-      height: 0 !important;
-      overflow: hidden !important;
-      clip: rect(0 0 0 0) !important;
-    }
-    .vjs-control-bar {
-      display: flex !important;
-      align-items: center;
-      height: 40px;
-      border-radius: 10px;
-    }
-    .vjs-live-display {
-      color: #ff4c4c !important;
+
+    /* LIVE badge */
+    .mejs__live-badge {
+      color: #ff4c4c;
       font-weight: bold;
-      padding-left: 10px;
+      font-size: 15px;
+      margin-left: 15px;
+      margin-right: 15px;
     }
-    .vjs-big-play-button {
-      display: none !important;
+
+    /* Make sure the volume slider stays visible */
+    .mejs__volume-button,
+    .mejs__volume-slider {
+      display: block !important;
     }
   </style>
 </head>
@@ -79,26 +71,67 @@
   </header>
 
   <div class="audio-container">
-    <audio
-      id="live-audio"
-      class="video-js vjs-default-skin vjs-live"
-      controls
-      preload="auto"
-      data-setup='{
-        "liveui": true,
-        "controlBar": {
-          "children": [
-            "playToggle",
-            "liveDisplay",
-            "progressControl",
-            "volumePanel"
-          ]
-        }
-      }'>
+    <audio id="live-audio" controls preload="auto">
       <source src="https://27143.live.streamtheworld.com/KLIZFM.mp3?dist=onlineradiobox" type="audio/mpeg" />
     </audio>
   </div>
 
-  <script src="https://vjs.zencdn.net/7.11.4/video.min.js"></script>
+  <!-- MediaElement.js JS -->
+  <script src="https://cdn.jsdelivr.net/npm/mediaelement@5.0.5/build/mediaelement-and-player.min.js"></script>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', function () {
+      const player = new MediaElementPlayer('live-audio', {
+        stretching: 'responsive',
+        features: [
+          'playpause',
+          'volume',     // ENSURES VOLUME SLIDER
+          'current',
+          'progress'
+        ],
+        audioVolume: 'horizontal'
+      });
+
+      // Delay to ensure MEJS has fully built the UI
+      setTimeout(() => {
+        const media = player.media;
+        const controls = player.container.querySelector('.mejs__controls');
+
+        // Create LIVE badge now (hidden until confirmed)
+        const liveBadge = document.createElement('span');
+        liveBadge.className = 'mejs__live-badge';
+        liveBadge.style.display = 'none'; // hidden until detected
+        liveBadge.textContent = '• LIVE';
+        controls.insertBefore(liveBadge, controls.children[1]);
+
+        function updateLiveStatus() {
+          const isLive = !isFinite(media.duration) || media.duration === Infinity;
+
+          if (isLive) {
+            liveBadge.style.display = 'inline';
+
+            // Hide time counter
+            const timeElem = controls.querySelector('.mejs__currenttime-container');
+            if (timeElem) timeElem.style.display = 'none';
+
+            // Hide progress bar
+            const progressElem = controls.querySelector('.mejs__time-rail');
+            if (progressElem) progressElem.style.display = 'none';
+
+          } else {
+            liveBadge.style.display = 'none';
+          }
+        }
+
+        // Check immediately and when metadata updates
+        media.addEventListener('loadedmetadata', updateLiveStatus);
+        media.addEventListener('durationchange', updateLiveStatus);
+
+        // Fallback: check after small delay
+        setTimeout(updateLiveStatus, 800);
+
+      }, 400);
+    });
+  </script>
 </body>
 </html>
