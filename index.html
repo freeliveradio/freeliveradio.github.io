@@ -17,6 +17,7 @@
       padding-top: 150px;
       text-align: center;
     }
+
     header {
       position: fixed;
       top: 0;
@@ -30,14 +31,17 @@
       flex-direction: column;
       align-items: center;
     }
+
     header .music-icon {
       font-size: 48px;
       color: #6a11cb;
     }
+
     header h1 {
       margin: 10px 0 0;
       font-size: 2em;
     }
+
     .audio-container {
       margin: 20px auto;
       width: 80%;
@@ -48,18 +52,18 @@
       box-shadow: 0 0 10px rgba(0,0,0,0.5);
     }
 
-    /* LIVE badge */
+    /* LIVE badge styling */
     .mejs__live-badge {
       color: #ff4c4c;
       font-weight: bold;
       font-size: 15px;
-      margin-left: 15px;
-      margin-right: 15px;
+      margin: 0 15px;
     }
 
-    /* Make sure the volume slider stays visible */
+    /* Keep volume slider visible in MEJS 5 */
     .mejs__volume-button,
-    .mejs__volume-slider {
+    .mejs__volume-total,
+    .mejs__volume-current {
       display: block !important;
     }
   </style>
@@ -83,55 +87,54 @@
     document.addEventListener('DOMContentLoaded', function () {
       const player = new MediaElementPlayer('live-audio', {
         stretching: 'responsive',
-        features: [
-          'playpause',
-          'volume',     // ENSURES VOLUME SLIDER
-          'current',
-          'progress'
-        ],
+        // Only show controls appropriate for a LIVE stream
+        features: ['playpause', 'volume'],
         audioVolume: 'horizontal'
       });
 
-      // Delay to ensure MEJS has fully built the UI
       setTimeout(() => {
         const media = player.media;
         const controls = player.container.querySelector('.mejs__controls');
 
-        // Create LIVE badge now (hidden until confirmed)
+        // Create the LIVE badge
         const liveBadge = document.createElement('span');
         liveBadge.className = 'mejs__live-badge';
-        liveBadge.style.display = 'none'; // hidden until detected
+        liveBadge.style.display = 'none';
         liveBadge.textContent = '• LIVE';
-        controls.insertBefore(liveBadge, controls.children[1]);
+
+        // Place LIVE badge between play and volume
+        const volumeBtn = controls.querySelector('.mejs__volume-button');
+        controls.insertBefore(liveBadge, volumeBtn);
 
         function updateLiveStatus() {
+          // Detect if stream is live (duration infinite)
           const isLive = !isFinite(media.duration) || media.duration === Infinity;
 
           if (isLive) {
             liveBadge.style.display = 'inline';
 
-            // Hide time counter
-            const timeElem = controls.querySelector('.mejs__currenttime-container');
-            if (timeElem) timeElem.style.display = 'none';
+            // Hide time + progress elements (MEJS 5 names)
+            const timeItems = controls.querySelectorAll(`
+              .mejs__time,
+              .mejs__time-current,
+              .mejs__time-current-position,
+              .mejs__time-buffering,
+              .mejs__time-loaded
+            `);
 
-            // Hide progress bar
-            const progressElem = controls.querySelector('.mejs__time-rail');
-            if (progressElem) progressElem.style.display = 'none';
-
+            timeItems.forEach(el => el.style.display = 'none');
           } else {
             liveBadge.style.display = 'none';
           }
         }
 
-        // Check immediately and when metadata updates
         media.addEventListener('loadedmetadata', updateLiveStatus);
         media.addEventListener('durationchange', updateLiveStatus);
-
-        // Fallback: check after small delay
         setTimeout(updateLiveStatus, 800);
 
       }, 400);
     });
   </script>
+
 </body>
 </html>
